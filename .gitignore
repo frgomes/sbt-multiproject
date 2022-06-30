@@ -1,0 +1,46 @@
+syntax: glob
+
+**/*.jar
+**/lib/
+**/target/
+**/dist/
+**/tmp/
+**/log/
+**/logs/
+**/generated_scala/
+**/.tmp
+**/.log
+**/.out
+**/.DS_Store
+**/*.cache
+
+# vscode
+**/.vscode
+
+# intellij
+.idea
+.idea_modules
+.lib
+*.lib
+*.iml
+
+# eclipse
+.classpath
+.project
+.settings
+
+# netbeans
+.classpath_nb
+
+# emacs / zile
+**/*~
+**/#*
+**/.#*
+**/.ZILESAVE
+
+# metals
+**/.bsp/
+**/.bloop/
+**/.metals/
+**/project/project/
+**/project/metals.sbt
