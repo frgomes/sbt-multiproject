@@ -1,12 +1,12 @@
 import munit._
 
 class MainSuite extends munit.FunSuite {
-  test("hello") {
+  test("Visibility of Test code") {
     val obtained = 42
-    val expected = 43
+    val expected = Utility.value
     assertEquals(obtained, expected)
   }
-  test("import DataFrame") {
+  test("ability to import Compile dependencies") {
     import org.apache.spark.sql.DataFrame
     assert(false)
   }

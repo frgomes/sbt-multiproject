@@ -98,7 +98,6 @@ def sparkDependencies(version: String, scope: Configuration = Provided): Seq[Set
 
 def scalaSettings: Seq[Setting[_]] =
   Seq(
-    crossScalaVersions := Seq(scala212, scala213),
     scalacOptions := {
       CrossVersion.partialVersion(scalaVersion.value) match {
         case Some((2, n)) if(n <= 12) => scalac212
@@ -156,6 +155,20 @@ val scalac212: Seq[String] =
 import Configs._
 import ProjectSyntax._
 
+def testSettings(scopes: String): Seq[Setting[_]] =
+  Seq(
+    testFrameworks += new TestFramework("scalaprops.ScalapropsFramework"),
+    testFrameworks += new TestFramework("utest.runner.Framework"),
+    testFrameworks += new TestFramework("munit.Framework"),
+    javaOptions ++= Seq("-Xmx1G", "-ea"),
+    fork := true,
+    parallelExecution := false,
+    libraryDependencies ++=
+      Seq(
+        "com.github.scalaprops" %% "scalaprops" % "0.9.0"  % scopes,
+        "org.scalameta"         %% "munit"      % "0.7.29" % scopes,
+        "com.lihaoyi"           %% "utest"      % "0.7.11" % scopes))
+
 lazy val root =
   project
     .in(file("."))
@@ -186,7 +199,7 @@ lazy val `core_spark33` =
     .in(file("target/.core_spark33"))
     .settings(name := s"${application}_core_spark33")
     .settings(sourceDirectory := (sourceDirectory.value / "/../../.." / "core/src").getCanonicalFile())
-    .inConfigs(Compile,Test,IntegrationTest,FunctionalTest,AcceptanceTest,PerformanceTest)
+    .inConfigs(Compile,Test,IntegrationTest,FunctionalTest,AcceptanceTest,PerformanceTest)(testSettings)
     .settings(crossScalaVersions := Seq(scala212, scala213))
     .settings(scalaSettings)
     .settings(sparkDependencies(spark33))
@@ -197,7 +210,7 @@ lazy val `core_spark32` =
     .in(file("target/.core_spark32"))
     .settings(name := s"${application}_core_spark32")
     .settings(sourceDirectory := (sourceDirectory.value / "/../../.." / "core/src").getCanonicalFile())
-    .inConfigs(Compile,Test,IntegrationTest,FunctionalTest,AcceptanceTest,PerformanceTest)
+    .inConfigs(Compile,Test,IntegrationTest,FunctionalTest,AcceptanceTest,PerformanceTest)(testSettings)
     .settings(crossScalaVersions := Seq(scala212, scala213))
     .settings(scalaSettings)
     .settings(sparkDependencies(spark32))
@@ -208,110 +221,8 @@ lazy val `core_spark31` =
     .in(file("target/.core_spark31"))
     .settings(name := s"${application}_core_spark31")
     .settings(sourceDirectory := (sourceDirectory.value / "/../../.." / "core/src").getCanonicalFile())
-    .inConfigs(Compile,Test,IntegrationTest,FunctionalTest,AcceptanceTest,PerformanceTest)
+    .inConfigs(Compile,Test,IntegrationTest,FunctionalTest,AcceptanceTest,PerformanceTest)(testSettings)
     .settings(crossScalaVersions := Seq(scala212))
     .settings(scalaSettings)
     .settings(sparkDependencies(spark31))
     .settings(buildinfoSettings).enablePlugins(BuildInfoPlugin)
-
-
-
-
-
-
-/*
-
-initialize := {
-  val _ = initialize.value // run the previous initialization
-  val required = "11"
-  val current  = sys.props("java.specification.version")
-  assert(current == required, s"Unsupported JDK: java.specification.version $current != $required")
-}
-
-def buildinfoSettings: Seq[Setting[_]] =
-  Seq(
-    buildInfoPackage := s"${organization.value}.${name.value}".replace("-", "."),
-    buildInfoKeys    := Seq[BuildInfoKey](organization, name, version, scalaVersion, sbtVersion))
-
-def spark321Dependencies: Seq[Setting[_]] =
-  Seq(
-    libraryDependencies ++=
-      Seq(
-        "org.apache.spark" % "spark-sql_2.13"   % "3.2.1"))
-
-def testDependencies: Seq[Setting[_]] =
-  Seq(
-    testFrameworks += new TestFramework("utest.runner.Framework"),
-    libraryDependencies ++=
-      Seq(
-        //FIXME: "com.lihaoyi"      %% "utest"       % "0.7.11"    % "test;it;tools"))
-        "com.lihaoyi"      %% "utest"       % "0.7.11"    % "test"))
-
-def testSettings: Seq[Setting[_]] =
-  Defaults.itSettings ++
-  Seq(
-    IntegrationTest/dependencyClasspath := (IntegrationTest/dependencyClasspath).value ++ (Test/exportedProducts).value)
-
-def disablePublishing: Seq[Setting[_]] =
-  Seq(
-    publish/skip := true,
-    publishLocal/skip := true,
-  )
-
-def scala3: Seq[Setting[_]] =
-  Seq(
-    scalaVersion := "3.1.0",
-    compileOrder := CompileOrder.JavaThenScala,
-    scalacOptions ++= Seq("-unchecked", "-deprecation", "-Wconf:any:error"))
-
-
-lazy val root =
-  (project in file("."))
-    .settings(disablePublishing:_*)
-    .aggregate(core /*, datetime, schema*/)
-
-lazy val core =
-  (project in file("core"))
-    .withDefaultConfigurations
-    .settings(scala3)
-    .settings(testSettings)
-    .settings(buildinfoSettings).enablePlugins(BuildInfoPlugin)
-    .settings(testDependencies)
-
-lazy val datetime =
-  (project in file("datetime"))
-    .withDefaultConfigurations
-    .settings(scala3)
-    .settings(testSettings)
-    .settings(testDependencies)
-    .settings(spark321Dependencies)
-
-lazy val schema =
-  (project in file("schema"))
-    .withDefaultConfigurations
-    .settings(scala3)
-    .settings(testSettings)
-    .settings(testDependencies)
-    .settings(spark321Dependencies)
-    .dependsOn(core, datetime)
-
-
-
-//NOTE: // Only needed if multiple targets is desired.
-//NOTE: // Due to limiteation of project-matrix (a SBT plugin), all sources would have to be relocated to subdirectories.
-//NOTE: lazy val root =
-//NOTE:   (project in file("."))
-//NOTE:     .settings(disablePublishing:_*)
-//NOTE:     .aggregate(core.projectRefs:_*)
-//NOTE:
-//NOTE: lazy val core =
-//NOTE:   (projectMatrix in file("core"))
-//NOTE:     .configs(IntegrationTest)
-//NOTE:     .settings(compileSettings)
-//NOTE:     .settings(testSettings)
-//NOTE:     .settings(testDependencies)
-//NOTE:     .customRow(
-//NOTE:       scalaVersions = Seq(scala3),
-//NOTE:       axisValues = Seq(SparkAxis.v321, VirtualAxis.jvm),
-//NOTE:       _.settings(moduleName := name.value + SparkAxis.v321.idSuffix, spark321Dependencies))
-*/
