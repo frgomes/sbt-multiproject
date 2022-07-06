@@ -84,12 +84,12 @@ def sparkDependencies(version: String, scope: Configuration = Provided): Seq[Set
           Seq(
             "org.apache.spark" %% "spark-core" % version  % scope,
             "org.apache.spark" %% "spark-sql"  % version  % scope,
-            "com.databricks"   %% "spark-xml"  % "0.14.0" % "test;it;ft")
+            "com.databricks"   %% "spark-xml"  % "0.14.0" % "test;it;ft;pt;at")
         case Regex("3", minor, _) if (minor.toInt <= 1) => 
           Seq(
             "org.apache.spark" %% "spark-core" % version  % scope,
             "org.apache.spark" %% "spark-sql"  % version  % scope,
-            "com.databricks"   %% "spark-xml"  % "0.13.0" % "test;it;ft")
+            "com.databricks"   %% "spark-xml"  % "0.13.0" % "test;it;ft;pt;at")
         case _ =>
           throw new IllegalArgumentException("Invalid Spark version ${version}")
       }
@@ -174,7 +174,7 @@ lazy val root =
     .in(file("."))
     .settings(disablePublishing)
     .settings(crossScalaVersions := Nil)
-    .aggregate(`root_spark33` /*, `root_spark32` , `root_spark31`*/)
+    .aggregate(`root_spark33`, `root_spark32` , `root_spark31`)
 
 lazy val `root_spark33` =
   project
@@ -199,7 +199,7 @@ lazy val `core_spark33` =
     .in(file("target/.core_spark33"))
     .settings(name := s"${application}_core_spark33")
     .settings(sourceDirectory := (sourceDirectory.value / "/../../.." / "core/src").getCanonicalFile())
-    .inConfigs(Compile,Test,IntegrationTest,FunctionalTest,AcceptanceTest,PerformanceTest)(testSettings)
+    .inConfigs(Test,IntegrationTest,FunctionalTest,AcceptanceTest,PerformanceTest)(testSettings)
     .settings(crossScalaVersions := Seq(scala212, scala213))
     .settings(scalaSettings)
     .settings(sparkDependencies(spark33))
@@ -210,7 +210,7 @@ lazy val `core_spark32` =
     .in(file("target/.core_spark32"))
     .settings(name := s"${application}_core_spark32")
     .settings(sourceDirectory := (sourceDirectory.value / "/../../.." / "core/src").getCanonicalFile())
-    .inConfigs(Compile,Test,IntegrationTest,FunctionalTest,AcceptanceTest,PerformanceTest)(testSettings)
+    .inConfigs(Test,IntegrationTest,FunctionalTest,AcceptanceTest,PerformanceTest)(testSettings)
     .settings(crossScalaVersions := Seq(scala212, scala213))
     .settings(scalaSettings)
     .settings(sparkDependencies(spark32))
@@ -221,7 +221,7 @@ lazy val `core_spark31` =
     .in(file("target/.core_spark31"))
     .settings(name := s"${application}_core_spark31")
     .settings(sourceDirectory := (sourceDirectory.value / "/../../.." / "core/src").getCanonicalFile())
-    .inConfigs(Compile,Test,IntegrationTest,FunctionalTest,AcceptanceTest,PerformanceTest)(testSettings)
+    .inConfigs(Test,IntegrationTest,FunctionalTest,AcceptanceTest,PerformanceTest)(testSettings)
     .settings(crossScalaVersions := Seq(scala212))
     .settings(scalaSettings)
     .settings(sparkDependencies(spark31))
